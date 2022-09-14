@@ -1,49 +1,46 @@
-import streamlit as st
+file = "mall_customer.csv"
+
 import pandas as pd
-from sklearn import datasets
-from sklearn.ensemble import RandomForestClassifier
+df = pd.read_csv(file)
 
-st.write("""
-# Simple Iris Flower Prediction App
+df.shape
+df.describe()
+df.head()
 
-This app predicts the **Iris flower** type!
-""")
+features = ['Annual_Income_(k$)', 'Spending_Score']
+X = df[features]
+plt.scatter(X['Annual_Income_(k$)'], X['Spending_Score']);
 
-st.sidebar.header('User Input Parameters')
+from sklearn.cluster import KMeans
+kmeans = KMeans(n_clusters=5)
+kmeans.fit(X)
+y_kmeans = kmeans.predict(X)
+plt.scatter(X['Annual_Income_(k$)'], X['Spending_Score'], c=y_kmeans, s=50, cmap='viridis')
 
-def user_input_features():
-    sepal_length = st.sidebar.slider('Sepal length', 4.3, 7.9, 5.4)
-    sepal_width = st.sidebar.slider('Sepal width', 2.0, 4.4, 3.4)
-    petal_length = st.sidebar.slider('Petal length', 1.0, 6.9, 1.3)
-    petal_width = st.sidebar.slider('Petal width', 0.1, 2.5, 0.2)
-    data = {'sepal_length': sepal_length,
-            'sepal_width': sepal_width,
-            'petal_length': petal_length,
-            'petal_width': petal_width}
-    features = pd.DataFrame(data, index=[0])
-    return features
+centers = kmeans.cluster_centers_
+plt.scatter(centers[:,0], centers[:,1], c='black', s=200, alpha=0.5);
 
-df = user_input_features()
+# Perform the prediction by using the trained model
+step_size = 0.01
 
-st.subheader('User Input parameters')
-st.write(df)
+# Plot the Decision Boundaries
+x_min, x_max = min(X.iloc[:,0]) - 1, max(X.iloc[:,0]) + 1
+y_min, y_max = min(X.iloc[:,1]) - 1, max(X.iloc[:,1]) + 1
+x_values, y_values = np.meshgrid(np.arange(x_min,x_max,step_size), np.arange(y_min,y_max,step_size))
 
-iris = datasets.load_iris()
-X = iris.data
-Y = iris.target
+# Predict labels for all points in the mesh
+predictions = kmeans.predict(np.c_[x_values.ravel(), y_values.ravel()])
+# Plot the results
+predictions = predictions.reshape(x_values.shape)
+plt.figure(figsize=(8,6))
+plt.imshow(predictions, interpolation='nearest', extent=(x_values.min(), x_values.max(), y_values.min(), y_values.max()), 
+           cmap=plt.cm.Spectral, aspect='auto', origin='lower')
 
-clf = RandomForestClassifier()
-clf.fit(X, Y)
+plt.scatter(X.iloc[:,0],X.iloc[:,1], marker='o', facecolors='grey',edgecolors='w',s=30)
+# Plot the centroids of the clusters
+centroids = kmeans.cluster_centers_
+plt.scatter(centroids[:,0], centroids[:,1], marker='o', s=200, linewidths=3, 
+           color='k', zorder=10, facecolors='black')
 
-prediction = clf.predict(df)
-prediction_proba = clf.predict_proba(df)
-
-st.subheader('Class labels and their corresponding index number')
-st.write(iris.target_names)
-
-st.subheader('Prediction')
-st.write(iris.target_names[prediction])
-#st.write(prediction)
-
-st.subheader('Prediction Probability')
-st.write(prediction_proba)
+plt.title('Centroids and boundaries calculated using KMeans Clustering', fontsize=16)
+plt.show()
