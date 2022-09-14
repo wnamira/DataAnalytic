@@ -9,7 +9,6 @@ df.head()
 
 features = ['Annual_Income_(k$)', 'Spending_Score']
 X = df[features]
-plt.scatter(X['Annual_Income_(k$)'], X['Spending_Score']);
 
 from sklearn.cluster import KMeans
 kmeans = KMeans(n_clusters=5)
