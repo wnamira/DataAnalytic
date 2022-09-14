@@ -5,3 +5,5 @@ df = pd.read_csv(file)
 
 df.shape
 df.describe()
+
+df.head()
