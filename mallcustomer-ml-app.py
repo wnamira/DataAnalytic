@@ -3,10 +3,6 @@ file = "mall_customer.csv"
 import pandas as pd
 df = pd.read_csv(file)
 
-df.shape
-df.describe()
-df.head()
-
 features = ['Annual_Income_(k$)', 'Spending_Score']
 X = df[features]
 
